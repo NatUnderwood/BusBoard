@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
 
-namespace BusBoard.ConsoleApp
+namespace BusBoard.Api
 {
     public static class ApiCaller
     {

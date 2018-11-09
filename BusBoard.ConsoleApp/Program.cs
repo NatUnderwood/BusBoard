@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using RestSharp;
 using Newtonsoft.Json;
+using BusBoard.Api;
 
 namespace BusBoard.ConsoleApp
 
@@ -19,8 +20,6 @@ namespace BusBoard.ConsoleApp
             var listOfBuses = new List<BusJson>();
             double lat, lon;
             Stop[] stops;
-
-
             Console.WriteLine("Enter your postcode:");
             var postcode = Console.ReadLine();
             ApiCaller.RetrieveLatLongfromPostcode(postcode, out lat, out lon);
