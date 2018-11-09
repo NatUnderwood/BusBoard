@@ -9,19 +9,16 @@ namespace BusBoard.ConsoleApp
 {
     public static class ApiCaller
     {
-
-
-
-        
-
+        private static readonly RestClient TflClient = new RestClient("https://api.tfl.gov.uk/");
+        private static readonly RestRequest BusRequest = new RestRequest("/StopPoint/{id}/Arrivals", Method.GET);
+        private static readonly RestClient PostcodeClient = new RestClient("https://api.postcodes.io/");
+        private static readonly RestRequest PostcodeRequest = new RestRequest("/postcodes/{postcode}", Method.GET);
         public static bool RetrieveBusList(string stopId, out List<BusJson> ListBusJson)
         {
-            RestClient TflClient = new RestClient("https://api.tfl.gov.uk/");
-            RestRequest busRequest = new RestRequest("/StopPoint/{id}/Arrivals", Method.GET);
-            busRequest.AddUrlSegment("id", stopId);
+            BusRequest.AddUrlSegment("id", stopId);
             try
             {
-                IRestResponse response = TflClient.Execute(busRequest);
+                IRestResponse response = TflClient.Execute(BusRequest);
                 var content = response.Content;
                 ListBusJson = JsonConvert.DeserializeObject<List<BusJson>>(content);
             }
@@ -36,12 +33,10 @@ namespace BusBoard.ConsoleApp
 
         public static bool RetrieveLatLongfromPostcode(string postcode, out double latitude, out double longitude)
         {
-            RestClient postcodeClient = new RestClient("https://api.postcodes.io/");
-            RestRequest postcodeRequest = new RestRequest("/postcodes/{postcode}", Method.GET);
-            postcodeRequest.AddUrlSegment("postcode", postcode);
+            PostcodeRequest.AddUrlSegment("postcode", postcode);
             try
             {
-                IRestResponse response = postcodeClient.Execute(postcodeRequest);
+                IRestResponse response = PostcodeClient.Execute(PostcodeRequest);
                 var content = response.Content;
                 var output = JObject.Parse(content);
                 latitude = (double)output.GetValue("result")["latitude"];
@@ -57,11 +52,34 @@ namespace BusBoard.ConsoleApp
             return true;
         }
 
-        //public static bool RetrieveNearestStopsFromLatLong(double latitude, double longitude, out string[] stops)
-        //{
-        //    RestClient TflClient = new RestClient("https://api.tfl.gov.uk/");
-        //    RestRequest busRequest = new RestRequest("/StopPoint?stopTypes={stopTypes}&radius={radius}&modes={modes}&location.lat={lat}&location.lon={lon}", Method.GET);
-        //}
+        public static bool RetrieveNearestStopsFromLatLong(double latitude, double longitude, out Stop[] stops)
+        {
+            RestRequest stopPointQuery = new RestRequest("/StopPoint?stopTypes={stopTypes}&radius={radius}&modes={modes}&lat={lat}&lon={lon}", Method.GET);
+            stopPointQuery.AddUrlSegment("stopTypes", "NaptanPublicBusCoachTram");
+            stopPointQuery.AddUrlSegment("radius", "1000" );
+            stopPointQuery.AddUrlSegment("modes", "bus");
+            stopPointQuery.AddUrlSegment("lat", latitude);
+            stopPointQuery.AddUrlSegment("lon", longitude);
+            try
+            {
+                IRestResponse response = TflClient.Execute(stopPointQuery);
+                var content = response.Content;
+                var output = JObject.Parse(content);
+                var jStops = output.GetValue("stopPoints");
+                stops = new Stop[2];
+
+                for (int i = 0; i < 2; i ++)
+                    stops[i] = new Stop((string)jStops[i]["commonName"], (string)jStops[i]["indicator"], (string)jStops[i]["id"]);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                stops = null;
+                return false;
+            }
+            return true;
+        }
+        
 
     }
 }
