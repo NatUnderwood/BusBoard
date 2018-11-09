@@ -22,18 +22,10 @@ namespace BusBoard.ConsoleApp
             Stop[] stops;
             Console.WriteLine("Enter your postcode:");
             var postcode = Console.ReadLine();
-            ApiCaller.RetrieveLatLongfromPostcode(postcode, out lat, out lon);
-            ApiCaller.RetrieveNearestStopsFromLatLong(lat, lon, out stops);
-            foreach (Stop stop in stops)
-            {
-                Console.WriteLine(stop.ToString());
-                ApiCaller.RetrieveBusList(stop.Id, out listOfBuses);
-                listOfBuses.RemoveRange(5, listOfBuses.Count - 5);
-                foreach (var bus in listOfBuses)
-                {
-                    Console.WriteLine(bus.ToBus().ToString());
-                }
-            }
+            List<string> busInfo = ApiCaller.GetBusInfoPostcode(postcode);
+            foreach (string line in busInfo)
+                Console.WriteLine(line);
+
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace BusBoard.Web.ViewModels
+﻿using System.Collections.Generic;
+using BusBoard.Api;
+
+namespace BusBoard.Web.ViewModels
 {
   public class BusInfo
   {
@@ -9,5 +12,6 @@
 
     public string PostCode { get; set; }
 
+      public List<string> BusesInfo => ApiCaller.GetBusInfoPostcode(PostCode);
   }
 }

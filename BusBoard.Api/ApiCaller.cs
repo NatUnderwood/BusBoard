@@ -13,6 +13,26 @@ namespace BusBoard.Api
         private static readonly RestRequest BusRequest = new RestRequest("/StopPoint/{id}/Arrivals", Method.GET);
         private static readonly RestClient PostcodeClient = new RestClient("https://api.postcodes.io/");
         private static readonly RestRequest PostcodeRequest = new RestRequest("/postcodes/{postcode}", Method.GET);
+
+        public static List<string> GetBusInfoPostcode(string postcode)
+        {
+            List<string> busInfo = new List<string>();
+            ApiCaller.RetrieveLatLongfromPostcode(postcode, out double lat, out double lon);
+            ApiCaller.RetrieveNearestStopsFromLatLong(lat, lon, out Stop[] stops);
+            foreach (Stop stop in stops)
+            {
+                busInfo.Add( stop.ToString());
+                ApiCaller.RetrieveBusList(stop.Id, out List<BusJson> listOfBuses);
+                listOfBuses.RemoveRange(5, listOfBuses.Count - 5);
+                foreach (var bus in listOfBuses)
+                {
+                    busInfo.Add( bus.ToBus().ToString());
+                }
+            }
+
+            return busInfo;
+        }
+
         public static bool RetrieveBusList(string stopId, out List<BusJson> ListBusJson)
         {
             BusRequest.AddUrlSegment("id", stopId);
