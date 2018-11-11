@@ -17,15 +17,13 @@ namespace BusBoard.ConsoleApp
         static void Main(string[] args)
         {
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            var listOfBuses = new List<BusJson>();
-            double lat, lon;
-            Stop[] stops;
             Console.WriteLine("Enter your postcode:");
             var postcode = Console.ReadLine();
             List<string> busInfo = ApiCaller.GetBusInfoPostcode(postcode);
             foreach (string line in busInfo)
                 Console.WriteLine(line);
-
+            Console.WriteLine("Press any key to exit.");
+            Console.ReadKey();
         }
     }
 }

@@ -4,9 +4,9 @@ namespace BusBoard.Api
 {
     public class Bus
     {
-        public string LineName;
-        public string DestinationName;
-        public DateTime ExpectedArrival;
+        public string LineName { get; private set; }
+        public string DestinationName { get; private set; }
+        public DateTime ExpectedArrival { get; private set; }
 
         public Bus(string lineName, string destinationName, DateTime expectedArrival)
         {
@@ -17,7 +17,7 @@ namespace BusBoard.Api
 
         public override string ToString()
         {
-            return $"Line Name: {LineName}, Destination Name: {DestinationName}, Expected Arrival: {ExpectedArrival.ToShortTimeString()}!!!!!!!";
+            return $"Line Name: {LineName}, Destination Name: {DestinationName}, Expected Arrival: {ExpectedArrival.ToShortTimeString()}!!";
         }
     }
 }

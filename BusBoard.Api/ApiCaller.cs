@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -17,34 +17,46 @@ namespace BusBoard.Api
         public static List<string> GetBusInfoPostcode(string postcode)
         {
             List<string> busInfo = new List<string>();
-            ApiCaller.RetrieveLatLongfromPostcode(postcode, out double lat, out double lon);
-            ApiCaller.RetrieveNearestStopsFromLatLong(lat, lon, out Stop[] stops);
-            foreach (Stop stop in stops)
+            if(!ApiCaller.RetrieveLatLongfromPostcode(postcode, out double lat, out double lon))
+                return new List<string> {$"Please enter a valid postcode"};
+                
+            if(!ApiCaller.RetrieveNearestStopsFromLatLong(lat, lon, out List<Stop> stops))
+                return new List<string> {$"London bus stops not found near {postcode}" };
+
+            var nearestTwoStops = stops.OrderBy(i => i.Distance).Take(2);
+            foreach (var stop in nearestTwoStops)
             {
-                busInfo.Add( stop.ToString());
-                ApiCaller.RetrieveBusList(stop.Id, out List<BusJson> listOfBuses);
-                listOfBuses.RemoveRange(5, listOfBuses.Count - 5);
-                foreach (var bus in listOfBuses)
-                {
-                    busInfo.Add( bus.ToBus().ToString());
-                }
+                busInfo.Add(stop.ToString());
+                ApiCaller.RetrieveBusList(stop.Id, out List<Bus> busList);
+                var nextFiveBuses = busList.OrderBy(i => i.ExpectedArrival).Take(5);
+                foreach (var bus in nextFiveBuses)
+                    busInfo.Add(bus.ToString());
             }
 
             return busInfo;
         }
 
-        public static bool RetrieveBusList(string stopId, out List<BusJson> ListBusJson)
+        public static bool RetrieveBusList(string stopId, out List<Bus> busList)
         {
+            busList = new List<Bus>();
             BusRequest.AddUrlSegment("id", stopId);
             try
             {
                 IRestResponse response = TflClient.Execute(BusRequest);
-                var content = response.Content;
-                ListBusJson = JsonConvert.DeserializeObject<List<BusJson>>(content);
+                var jsonBusList = JArray.Parse(response.Content);
+                foreach (var jsonBus in jsonBusList)
+                {
+                    var lineName = (string)jsonBus["lineName"];
+                    var destinationName = (string)jsonBus["destinationName"];
+                    var expectedArrival = (DateTime) jsonBus["expectedArrival"];
+                    busList.Add(new Bus(lineName, destinationName, expectedArrival));
+                }
+
             }
-            catch
+            catch (Exception e)
             {
-                ListBusJson = null;
+                Console.WriteLine(e.Message);
+                busList = null;
                 return false;
             }
 
@@ -57,14 +69,13 @@ namespace BusBoard.Api
             try
             {
                 IRestResponse response = PostcodeClient.Execute(PostcodeRequest);
-                var content = response.Content;
-                var output = JObject.Parse(content);
-                latitude = (double)output.GetValue("result")["latitude"];
-                longitude = (double)output.GetValue("result")["longitude"];
+                var output = JObject.Parse(response.Content);
+                latitude = (double) output.GetValue("result")["latitude"];
+                longitude = (double) output.GetValue("result")["longitude"];
             }
-            catch(Exception e)
+            catch (NullReferenceException e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e);
                 latitude = 0;
                 longitude = 0;
                 return false;
@@ -72,7 +83,7 @@ namespace BusBoard.Api
             return true;
         }
 
-        public static bool RetrieveNearestStopsFromLatLong(double latitude, double longitude, out Stop[] stops)
+        public static bool RetrieveNearestStopsFromLatLong(double latitude, double longitude, out List<Stop> stops)
         {
             RestRequest stopPointQuery = new RestRequest("/StopPoint?stopTypes={stopTypes}&radius={radius}&modes={modes}&lat={lat}&lon={lon}", Method.GET);
             stopPointQuery.AddUrlSegment("stopTypes", "NaptanPublicBusCoachTram");
@@ -83,13 +94,18 @@ namespace BusBoard.Api
             try
             {
                 IRestResponse response = TflClient.Execute(stopPointQuery);
-                var content = response.Content;
-                var output = JObject.Parse(content);
+                var output = JObject.Parse(response.Content);
                 var jStops = output.GetValue("stopPoints");
-                stops = new Stop[2];
-
-                for (int i = 0; i < 2; i ++)
-                    stops[i] = new Stop((string)jStops[i]["commonName"], (string)jStops[i]["indicator"], (string)jStops[i]["id"]);
+                stops = new List<Stop>();
+                foreach (var jStop in jStops)
+                {
+                    var commonName = (string)jStop["commonName"];
+                    var indicator = (string)jStop["indicator"];
+                    var id = (string)jStop["id"];
+                    var distance = (double)jStop["distance"];
+                    stops.Add(new Stop(commonName, indicator, id, distance));
+                }
+                
             }
             catch (Exception e)
             {
