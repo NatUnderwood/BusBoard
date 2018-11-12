@@ -1,12 +1,14 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 20px;
+    background-color: deeppink;
 }
 
 /* Set padding to keep content from hitting the edges */
 .body-content {
     padding-left: 15px;
     padding-right: 15px;
+    background-color: deepskyblue;
 }
 
 /* Override the default bootstrap behavior where horizontal description lists 
@@ -21,4 +23,27 @@ input,
 select,
 textarea {
     max-width: 280px;
+}
+
+.busInfo {
+    padding: 0 30px;
+    font-family: 'Bonbon';
+    font-size: 22px;
+}
+
+h2 {
+    padding: 40px 0 20px 15px;
+    font-family: 'Asset';
+    font-size: 30px;
+    animation-name: busTitle;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes busTitle {
+    0% { color: aqua;}
+    25% { color: darkmagenta;}
+    50% { color: red;}
+    75% { color: darkmagenta;}
+    100% { color: aqua; }
 }

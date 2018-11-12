@@ -17,7 +17,7 @@ namespace BusBoard.Api
 
         public override string ToString()
         {
-            return $"Line Name: {LineName}, Destination Name: {DestinationName}, Expected Arrival: {ExpectedArrival.ToShortTimeString()}!!";
+            return $"Line Name: {LineName}, Destination Name: {DestinationName}, Expected Arrival: {ExpectedArrival.ToShortTimeString()}";
         }
     }
 }

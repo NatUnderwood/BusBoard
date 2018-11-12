@@ -4,10 +4,17 @@
 }
 
 <h2>BusInfo</h2>
-
-<div class="row" style="display: block;">
-    @foreach (string line in Model.BusesInfo)
-    {
-        <div>@line</div>
-    }
+<meta http-equiv="refresh" content="30" URL="/Home/BusInfo"/>
+<meta http-equiv="Cache-control" content="no-cache">
+<div class="row">
+    <div style="display: block; margin-bottom: 20px;">
+        @foreach (string line in Model.BusesInfo)
+        {
+            <div class="busInfo">@line</div>
+        }
+    </div>
+    <div style="margin: auto;">
+        <iframe src="https://giphy.com/embed/3oEjHBd8nehqCC6iOI" width="480" height="360" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/3oEjHBd8nehqCC6iOI">via GIPHY</a></p>
+    </div>
+   
 </div>

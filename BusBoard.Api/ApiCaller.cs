@@ -68,7 +68,7 @@ namespace BusBoard.Api
             PostcodeRequest.AddUrlSegment("postcode", postcode);
             try
             {
-                IRestResponse response = PostcodeClient.Execute(PostcodeRequest);
+                var response = PostcodeClient.Execute(PostcodeRequest);
                 var output = JObject.Parse(response.Content);
                 latitude = (double) output.GetValue("result")["latitude"];
                 longitude = (double) output.GetValue("result")["longitude"];
@@ -85,7 +85,7 @@ namespace BusBoard.Api
 
         public static bool RetrieveNearestStopsFromLatLong(double latitude, double longitude, out List<Stop> stops)
         {
-            RestRequest stopPointQuery = new RestRequest("/StopPoint?stopTypes={stopTypes}&radius={radius}&modes={modes}&lat={lat}&lon={lon}", Method.GET);
+            var stopPointQuery = new RestRequest("/StopPoint?stopTypes={stopTypes}&radius={radius}&modes={modes}&lat={lat}&lon={lon}", Method.GET);
             stopPointQuery.AddUrlSegment("stopTypes", "NaptanPublicBusCoachTram");
             stopPointQuery.AddUrlSegment("radius", "1000" );
             stopPointQuery.AddUrlSegment("modes", "bus");
@@ -115,7 +115,5 @@ namespace BusBoard.Api
             }
             return true;
         }
-        
-
     }
 }
